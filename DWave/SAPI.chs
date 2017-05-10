@@ -7,7 +7,38 @@
 {-# LANGUAGE DeriveGeneric #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module DWave.SAPI where
+module DWave.SAPI (
+   SAPI
+  ,EitherIO(..)
+  ,Failable(..)
+  ,globalInit
+  ,remoteConnection
+  ,random
+  ,randomR
+  ,solveQubo
+  ,solveIsing
+  ,Problem(..)
+  ,ProblemEntry(..)
+  ,SolverParameters(..)
+  ,getSolver
+  ,listSolvers
+  ,getHardwareAdjacency
+  ,dwUrl
+  ,dwToken
+  ,defaultParameters
+  ,IsingResult
+  ,QuboResult
+  ,liftIO
+  ,err
+  ,Code(..)
+  ,SolverParameterAnswerMode(..)
+  ,Postprocess(..)
+  ,AnnealOffsets(..)
+  ,Connection
+  ,Solver
+  ,Chains(..)
+  ,
+) where
 
 import System.Environment
 import System.IO.Unsafe
@@ -22,7 +53,7 @@ import Foreign.C.Types
 import Foreign.C.String
 import Foreign.Ptr
 import qualified Language.C.Inline as C
-import System.Random
+import qualified System.Random as R
 import qualified Language.C.Inline.Context as CC
 import qualified Language.C.Types as T
 import qualified Data.Map as M
@@ -156,8 +187,8 @@ solveIsing s p@(Problem ps) sp str = do
       (,) <$> peek result <*> pure code)) 
   liftIO $ peek (unsafeCoerce ptr)
 
-random :: Random a => SAPI a 
-random = liftIO randomIO
+random :: R.Random a => SAPI a 
+random = liftIO R.randomIO
 
-randomR :: Random a => (a, a) -> SAPI a
-randomR = liftIO . randomRIO
+randomR :: R.Random a => (a, a) -> SAPI a
+randomR = liftIO . R.randomRIO

@@ -6,8 +6,6 @@ module DWave.SAPI.Types where
 import qualified Foreign.C.Types as C2HSImp
 import qualified Foreign.Ptr as C2HSImp
 import qualified Foreign.Storable as C2HSImp
-
-
 import Data.Monoid
 import Control.Applicative
 import Control.Monad
@@ -19,7 +17,6 @@ import qualified Language.C.Inline as C
 import qualified Language.C.Inline.Context as CC
 import qualified Language.C.Types as T
 import qualified Data.Map as M
-
 
 #include "dwave_sapi.h"
 
