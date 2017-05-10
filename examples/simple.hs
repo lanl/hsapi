@@ -11,12 +11,12 @@ import Data.List
 example :: SAPI IsingResult 
 example = do
   globalInit
-  rc <- remoteConnection <$> dwUrl <*> dwToken <*> pure Nothing >>= id
+  url <- dwUrl
+  token <- dwToken
+  rc <- remoteConnection url token Nothing 
   solvers <- listSolvers rc
   liftIO $ putStrLn "Supported solvers:" >> mapM_ print solvers
-  solver <- if elem "DW2X" solvers 
-    then getSolver rc "DW2X"
-    else err "DW2X not in supported solvers"
+  solver <- getSolver rc "DW2X"
   adj <- getHardwareAdjacency solver
   liftIO $ putStr "Number of edges available: " >> print (length adj)
   prob <- Problem <$> mapM (\e->uncurry ProblemEntry <$> pure e <*> random) 
@@ -24,7 +24,6 @@ example = do
   solveIsing solver prob defaultParameters "test"
   
 main :: IO ()
-main = do
-  result <- runEitherIO example
-  either (putStrLn . ("Example failed with error: " ++)) print result
+main = runEitherIO example
+   >>= either (putStrLn . ("Example failed with error: " ++)) print 
 
