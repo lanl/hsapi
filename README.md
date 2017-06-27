@@ -2,7 +2,7 @@ HSAPI
 ====
 These are (incomplete) Haskell bindings to the SAPI interface for DWave
 machines. In general, the names are transformed from the C API by removing
-`sapi` prefix and changing from underscore to camel case. 
+`sapi` prefix and changing from underscore to camelCase. 
 
 Usage
 -----
