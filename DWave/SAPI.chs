@@ -10,6 +10,7 @@
 module DWave.SAPI (
    SAPI
   ,EitherIO(..)
+  ,runSapi
   ,Failable(..)
   ,globalInit
   ,remoteConnection
@@ -72,6 +73,8 @@ C.context (C.baseCtx <> C.vecCtx <> C.funCtx <> sapiCtx)
 C.include "<dwave_sapi.h>"
 
 {#context prefix = "sapi"#}
+
+runSapi = runEitherIO
 
 data EitherIO e a = EitherIO {
   runEitherIO :: IO (Either e a)

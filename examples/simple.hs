@@ -22,6 +22,6 @@ example = do
   solveIsing solver prob defaultParameters "test"
   
 main :: IO ()
-main = runEitherIO example
+main = runSapi example
    >>= either (putStrLn . ("Example failed with error: " ++)) print 
 
