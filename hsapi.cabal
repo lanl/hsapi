@@ -22,13 +22,14 @@ library
   cc-options: -DDEBUG -g -Wall -O2
   -- other-modules:       
   -- other-extensions:    
-  build-depends:       base >=4.9 && <4.10, inline-c, containers, random
+  build-depends:       base >=4.9, inline-c, containers, random
   -- hs-source-dirs:      
   include-dirs:        DWave
   includes:            dwave_sapi.h
   c-sources:           DWave/SAPI.c 
   extra-libraries:     dwave_sapi m
   default-language:    Haskell2010
+  ghc-options:         -dynamic
 
 executable simpleSapi 
   main-is: examples/simple.hs
@@ -37,3 +38,4 @@ executable simpleSapi
   extra-libraries: dwave_sapi m
   c-sources:           DWave/SAPI.c
   default-language:    Haskell2010
+  ghc-options:         -dynamic

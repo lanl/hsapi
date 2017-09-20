@@ -3,7 +3,7 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 import DWave.SAPI
-import Data.Set
+import qualified Data.Set as S
 
 -- Assumes your URL and key are in your environment 
 example :: SAPI IsingResult 
@@ -18,10 +18,9 @@ example = do
   adj <- getHardwareAdjacency solver
   liftIO $ putStr "Number of edges available: " >> print (length adj)
   prob <- Problem <$> mapM (\e->uncurry ProblemEntry <$> pure e <*> random) 
-         (take 50 $ elems adj)
+         (take 50 $ S.elems adj)
   solveIsing solver prob defaultParameters "test"
   
 main :: IO ()
-main = runSapi example
-   >>= either (putStrLn . ("Example failed with error: " ++)) print 
+main = runSapi example >>= either putStrLn print
 
