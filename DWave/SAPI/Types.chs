@@ -94,6 +94,24 @@ data ProblemEntry = ProblemEntry {
   value :: Double
 } deriving (Show)
 
+data Embeddings = Embeddings {
+  verts :: [Int]
+}
+
+data FindEmbeddingParameters
+
+instance Storable Embeddings where
+  sizeOf p = 16 
+  alignment p = sizeOf nullPtr 
+  peek p = do
+    i <- fromIntegral <$> {#get Embeddings->len#} p
+    es <- castPtr <$> {#get Embeddings->elements#} p
+    Embeddings <$> peekArray i es
+  poke p (Embeddings x) = do
+    {#set Embeddings.len#} p (fromIntegral $ length x)
+    es <- castPtr <$> {#get Embeddings->elements#} p
+    pokeArray es $ x
+
 instance Storable ProblemEntry where
   sizeOf _ = {#sizeof ProblemEntry#}
   alignment _ = sizeOf nullPtr
@@ -200,6 +218,7 @@ instance Storable SolverParameters where
 
 sapiCtx :: C.Context
 sapiCtx = mempty { CC.ctxTypesTable = M.fromList 
-  [ (T.TypeName "sapi_QuantumSolverParameters", [t| SolverParameters |] ) ]
+  [ (T.TypeName "sapi_QuantumSolverParameters", [t| SolverParameters |] ),
+    (T.TypeName "sapi_FindEmbeddingParameters", [t| FindEmbeddingParameters |] ) ]
   }
 

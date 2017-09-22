@@ -18,6 +18,8 @@ module DWave.SAPI (
   ,randomR
   ,solveQubo
   ,solveIsing
+  ,findEmbedding
+  ,def
   ,Problem(..)
   ,ProblemEntry(..)
   ,SolverParameters(..)
@@ -26,7 +28,6 @@ module DWave.SAPI (
   ,getHardwareAdjacency
   ,dwUrl
   ,dwToken
-  ,defaultParameters
   ,IsingResult
   ,QuboResult
   ,liftIO
@@ -38,7 +39,6 @@ module DWave.SAPI (
   ,Connection
   ,Solver
   ,Chains(..)
-  ,
 ) where
 
 import System.Environment
@@ -46,6 +46,7 @@ import System.IO.Unsafe
 import Unsafe.Coerce
 import Data.Monoid
 import Data.Set (fromList, Set)
+import Data.Default
 import DWave.SAPI.Types
 import Control.Applicative
 import Control.Monad
@@ -68,6 +69,7 @@ import qualified Data.Map as M
 {#pointer *sapi_Solver as SolverPtr -> Solver #}
 {#pointer *sapi_IsingResult as IsingResultPtr -> IsingResult #}
 {#pointer *sapi_IsingResult as QuboResultPtr -> QuboResult #}
+{#pointer *sapi_Embeddings as EmbeddingsPtr -> Embeddings #}
 
 C.context (C.baseCtx <> C.vecCtx <> C.funCtx <> sapiCtx)
 C.include "<dwave_sapi.h>"
@@ -160,10 +162,16 @@ getHardwareAdjacency s = do
   p <- liftIO $ alloca $ \pp -> {#call getHardwareAdjacency#} s pp >> peek pp
   fromList . map (\(ProblemEntry i j _) -> (i,j)) . elements <$> liftIO (peek p)
 
+{#pointer *sapi_FindEmbeddingParameters as FindEmbeddingParametersPtr -> FindEmbeddingParameters #}
 {#pointer *sapi_SolverParameters as SolverParametersPtr -> SolverParameters #}
 
-defaultParameters :: SolverParameters 
-defaultParameters = unsafePerformIO $ peek [C.pure| const sapi_QuantumSolverParameters*
+{-instance Default FindEmbeddingParameters where
+  def = unsafePerformIO $ peek [C.pure| const sapi_FindEmbeddingParameters*
+           {&SAPI_FIND_EMBEDDING_DEFAULT_PARAMETERS} |]
+-}
+
+instance Default SolverParameters where
+  def = unsafePerformIO $ peek [C.pure| const sapi_QuantumSolverParameters*
            {&SAPI_QUANTUM_SOLVER_DEFAULT_PARAMETERS} |]
 
 solveQubo :: Ptr Solver -> Problem -> SolverParameters -> String -> SAPI QuboResult
@@ -189,6 +197,18 @@ solveIsing s p@(Problem ps) sp str = do
       code <- {#call solveIsing#} s pp spp result s'
       (,) <$> peek result <*> pure code)) 
   liftIO $ peek (unsafeCoerce ptr)
+
+findEmbedding :: Problem -> Set (Int, Int) -> String -> SAPI Embeddings
+findEmbedding p@(Problem ps) g str = do
+  ptr <- check "findEmbeddings" =<< (liftIO $ alloca $ \pp -> 
+    withArray ps $ \ps' -> {#set Problem.elements #} pp ps' >> poke pp p  >> 
+    (withCString str $ \s' -> 
+    alloca $ \result -> do
+      let ep = [C.pure| const sapi_FindEmbeddingParameters*
+           {&SAPI_FIND_EMBEDDING_DEFAULT_PARAMETERS} |]
+      code <- {#call findEmbedding#} pp pp ep result s'
+      (,) <$> peek result <*> pure code)) 
+  liftIO $ peek ptr
 
 random :: R.Random a => SAPI a 
 random = liftIO R.randomIO

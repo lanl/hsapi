@@ -16,10 +16,14 @@ example = do
   liftIO $ putStrLn "Supported solvers:" >> mapM_ print solvers
   solver <- getSolver rc "DW2X"
   adj <- getHardwareAdjacency solver
-  liftIO $ putStr "Number of edges available: " >> print (length adj)
-  prob <- Problem <$> mapM (\e->uncurry ProblemEntry <$> pure e <*> random) 
+  liftIO $ do
+    putStr "Number of edges available: " 
+    print (length adj)
+    putStrLn "Setting random values for first 50"
+  prob <- Problem <$> mapM 
+         (\(x,y)->ProblemEntry x y <$> random)
          (take 50 $ S.elems adj)
-  solveIsing solver prob defaultParameters "test"
+  solveIsing solver prob def "test"
   
 main :: IO ()
 main = runSapi example >>= either putStrLn print
